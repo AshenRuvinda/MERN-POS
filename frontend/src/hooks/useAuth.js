@@ -1,34 +1,66 @@
 import { useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
 
 const useAuth = () => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const initializeAuth = () => {
       try {
-        const decoded = jwtDecode(token);
-        console.log('useAuth: Decoded token:', decoded); // Debug log
-        if (decoded.userType) {
-          setUser({ userType: decoded.userType, userId: decoded.userId });
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const userId = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        
+        if (token && role) {
+          // Simple validation - just check if token and role exist
+          setUser({ 
+            userType: role, 
+            userId: userId,
+            username: username,
+            token: token 
+          });
+          console.log('useAuth: User authenticated:', { userType: role, userId: userId });
         } else {
-          console.error('useAuth: No userType in token'); // Debug log
-          localStorage.removeItem('token');
+          console.log('useAuth: No token or role found');
           setUser(null);
         }
       } catch (error) {
-        console.error('useAuth: Invalid token', error.message); // Debug log
+        console.error('useAuth: Error initializing auth:', error.message);
+        // Clear invalid data
         localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      console.log('useAuth: No token found'); // Debug log
-      setUser(null);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
-  return { user, setUser };
+  const setUserData = (userData) => {
+    console.log('useAuth: Setting user data:', userData);
+    setUser(userData);
+  };
+
+  const logout = () => {
+    console.log('useAuth: Logging out user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+    setUser(null);
+  };
+
+  return { 
+    user, 
+    setUser: setUserData, 
+    logout,
+    loading 
+  };
 };
 
 export default useAuth;
