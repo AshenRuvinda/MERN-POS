@@ -1,4 +1,5 @@
 import React from 'react';
+import { Package, DollarSign, Archive, ShoppingCart } from 'lucide-react';
 
 const ProductCard = ({ product, onAddToCart }) => {
   const getImageUrl = (imageName) => {
@@ -6,15 +7,24 @@ const ProductCard = ({ product, onAddToCart }) => {
     return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/uploads/products/${imageName}`;
   };
 
+  const getStockStatus = (stock) => {
+    if (stock === 0) return { color: 'red', label: 'Out of Stock', bgColor: 'bg-red-100', textColor: 'text-red-800' };
+    if (stock <= 5) return { color: 'orange', label: 'Low Stock', bgColor: 'bg-orange-100', textColor: 'text-orange-800' };
+    if (stock <= 10) return { color: 'yellow', label: 'Limited', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800' };
+    return { color: 'green', label: 'In Stock', bgColor: 'bg-green-100', textColor: 'text-green-800' };
+  };
+
+  const stockStatus = getStockStatus(product.stock);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Product Image */}
-      <div className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden">
         {product.image ? (
           <img
             src={getImageUrl(product.image)}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               e.target.src = '';
               e.target.style.display = 'none';
@@ -23,48 +33,80 @@ const ProductCard = ({ product, onAddToCart }) => {
           />
         ) : null}
         <div 
-          className={`w-full h-full bg-gray-200 flex items-center justify-center ${product.image ? 'hidden' : 'flex'}`}
+          className={`w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center ${product.image ? 'hidden' : 'flex'}`}
         >
-          <span className="text-gray-400 text-sm">No Image</span>
+          <div className="text-center">
+            <Package className="h-12 w-12 text-slate-400 mx-auto mb-2" />
+            <span className="text-slate-500 text-sm font-medium">No Image</span>
+          </div>
+        </div>
+        
+        {/* Stock Status Badge */}
+        <div className="absolute top-3 right-3">
+          <div className={`${stockStatus.bgColor} ${stockStatus.textColor} px-2 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm`}>
+            {stockStatus.label}
+          </div>
         </div>
       </div>
 
       {/* Product Details */}
-      <div className="p-4">
-        <h3 className="font-bold text-lg text-gray-800 mb-2 truncate" title={product.name}>
+      <div className="p-5">
+        {/* Product Name */}
+        <h3 className="font-bold text-lg text-slate-800 mb-3 line-clamp-2 leading-tight" title={product.name}>
           {product.name}
         </h3>
         
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 text-sm">Price:</span>
-            <span className="font-semibold text-lg text-green-600">
+        {/* Product Info Grid */}
+        <div className="space-y-3 mb-5">
+          {/* Price */}
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl">
+            <div className="flex items-center space-x-2">
+              <div className="bg-emerald-500 p-1.5 rounded-lg">
+                <DollarSign className="h-3.5 w-3.5 text-white" />
+              </div>
+              <span className="text-sm font-medium text-emerald-700">Price</span>
+            </div>
+            <span className="font-bold text-xl text-emerald-600">
               ${product.price}
             </span>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600 text-sm">Stock:</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              product.stock > 10 ? 'bg-green-100 text-green-800' : 
-              product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 
-              'bg-red-100 text-red-800'
-            }`}>
-              {product.stock} units
-            </span>
+          {/* Stock */}
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
+            <div className="flex items-center space-x-2">
+              <div className="bg-slate-500 p-1.5 rounded-lg">
+                <Archive className="h-3.5 w-3.5 text-white" />
+              </div>
+              <span className="text-sm font-medium text-slate-700">Stock</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-slate-800">{product.stock}</span>
+              <span className="text-sm text-slate-500">units</span>
+            </div>
           </div>
         </div>
 
+        {/* Action Button */}
         <button
           onClick={() => onAddToCart(product)}
           disabled={product.stock === 0}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors duration-200 ${
+          className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
             product.stock === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
+              ? 'bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue-500/25 transform hover:-translate-y-0.5'
           }`}
         >
-          {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+          {product.stock === 0 ? (
+            <>
+              <Archive className="h-4 w-4" />
+              <span>Out of Stock</span>
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="h-4 w-4" />
+              <span>Add to Cart</span>
+            </>
+          )}
         </button>
       </div>
     </div>

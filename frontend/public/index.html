@@ -1,12 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta Tags -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POS System</title>
+  <meta name="description" content="Modern Point of Sale System - Streamline your retail operations with our professional POS solution">
+  <meta name="keywords" content="POS, Point of Sale, Retail, Inventory, Sales Management">
+  <meta name="author" content="POS System">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="POS System - Professional Point of Sale">
+  <meta property="og:description" content="Modern Point of Sale System for retail businesses">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/assets/pos-preview.png">
+  
+  <!-- Title -->
+  <title>POS System - Professional Point of Sale</title>
+  
+  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#1e293b">
+  <meta name="msapplication-TileColor" content="#1e293b">
+  
+  <!-- Preconnect to External Resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
+  <!-- Critical CSS - Inline for performance -->
+  <style>
+    /* Reset and Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    }
+    
+    .loading-content {
+      text-align: center;
+      color: white;
+    }
+    
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 20px 50px rgba(59, 130, 246, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    .loading-logo svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+    
+    .loading-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .loading-subtitle {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 32px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #334155;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* Main App Container */
+    #root {
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    /* Error Boundary Styles */
+    .error-boundary {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    }
+    
+    .error-content {
+      text-align: center;
+      max-width: 500px;
+      padding: 40px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+      border: 1px solid #fecaca;
+    }
+    
+    .error-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    
+    .error-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #dc2626;
+      margin-bottom: 12px;
+    }
+    
+    .error-message {
+      color: #6b7280;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    
+    .error-button {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .error-button:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* Offline Message */
+    .offline-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 10000;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .offline-banner.show {
+      transform: translateY(0);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .loading-logo {
+        width: 60px;
+        height: 60px;
+      }
+      
+      .loading-logo svg {
+        width: 30px;
+        height: 30px;
+      }
+      
+      .loading-title {
+        font-size: 20px;
+      }
+      
+      .error-content {
+        margin: 20px;
+        padding: 30px;
+      }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #e2e8f0;
+      }
+    }
+    
+    /* Print styles */
+    @media print {
+      .loading-screen,
+      .offline-banner {
+        display: none !important;
+      }
+      
+      body {
+        background: white !important;
+        color: black !important;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <!-- Shopping Cart Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="21" r="1"></circle>
+          <circle cx="19" cy="21" r="1"></circle>
+          <path d="m2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+        </svg>
+      </div>
+      <h1 class="loading-title">POS System</h1>
+      <p class="loading-subtitle">Loading your workspace...</p>
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner">
+    <span>⚠️ You're currently offline. Some features may not be available.</span>
+  </div>
+
+  <!-- Main Application Container -->
+  <div id="root">
+    <!-- Fallback content for users with JavaScript disabled -->
+    <noscript>
+      <div class="error-boundary">
+        <div class="error-content">
+          <div class="error-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <h2 class="error-title">JavaScript Required</h2>
+          <p class="error-message">
+            This POS System requires JavaScript to function properly. 
+            Please enable JavaScript in your browser settings and refresh the page.
+          </p>
+        </div>
+      </div>
+    </noscript>
+  </div>
+
+  <!-- Service Worker Registration -->
+  <script>
+    // Remove loading screen when app loads
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.visibility = 'hidden';
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }
+      }, 1000);
+    });
+
+    // Online/Offline status
+    function updateOnlineStatus() {
+      const offlineBanner = document.getElementById('offline-banner');
+      if (!navigator.onLine) {
+        offlineBanner.classList.add('show');
+      } else {
+        offlineBanner.classList.remove('show');
+      }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('load', updateOnlineStatus);
+
+    // Error boundary for unhandled errors
+    window.addEventListener('error', function(e) {
+      console.error('Unhandled error:', e.error);
+      // You can add error reporting here
+    });
+
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled promise rejection:', e.reason);
+      // You can add error reporting here
+    });
+
+    // Performance monitoring
+    window.addEventListener('load', function() {
+      if ('performance' in window) {
+        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+        console.log('Page load time:', loadTime + 'ms');
+      }
+    });
+
+    // Service Worker for caching (optional)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(function(error) {
+            console.log('ServiceWorker registration failed');
+          });
+      });
+    }
+  </script>
 </body>
 </html>
