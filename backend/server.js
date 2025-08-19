@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const saleRoutes = require('./routes/saleRoutes');
@@ -21,6 +22,9 @@ mongoose.set('strictQuery', true);
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files for product images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Check if MONGO_URI is defined before connecting
 if (!process.env.MONGO_URI) {

@@ -2,21 +2,22 @@
     "name": "pos-system",
     "version": "1.0.0",
     "scripts": {
-      "start": "node server.js",
-      "server": "nodemon server.js",
-      "client": "npm start --prefix frontend",
-      "dev": "concurrently \"npm run server\" \"npm run client\""
+        "start": "node server.js",
+        "server": "nodemon server.js",
+        "client": "npm start --prefix frontend",
+        "dev": "concurrently \"npm run server\" \"npm run client\""
     },
     "dependencies": {
-      "express": "^4.17.1",
-      "mongoose": "^6.0.12",
-      "jsonwebtoken": "^8.5.1",
-      "bcryptjs": "^2.4.3",
-      "cors": "^2.8.5",
-      "dotenv": "^10.0.0"
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "mongoose": "^6.0.12",
+        "multer": "^2.0.2"
     },
     "devDependencies": {
-      "nodemon": "^2.0.14",
-      "concurrently": "^6.3.0"
+        "concurrently": "^6.3.0",
+        "nodemon": "^2.0.14"
     }
-  }
+}
