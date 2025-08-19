@@ -27,9 +27,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white h-screen border-r border-slate-700 flex flex-col">
+    <div className="fixed left-0 top-0 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white h-screen border-r border-slate-700 flex flex-col overflow-y-auto z-40">
       {/* Sidebar Header */}
-      <div className="p-6 border-b border-slate-700">
+      <div className="p-6 border-b border-slate-700 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-lg shadow-lg">
             <LayoutDashboard className="h-5 w-5 text-white" />
@@ -106,7 +106,7 @@ const Sidebar = () => {
       </nav>
       
       {/* Footer */}
-      <div className="p-4 border-t border-slate-700">
+      <div className="p-4 border-t border-slate-700 flex-shrink-0">
         <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg p-3 border border-slate-600">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>

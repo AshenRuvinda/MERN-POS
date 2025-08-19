@@ -15,9 +15,7 @@ const Products = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      // Only fetch if user is authenticated and not loading
       if (!loading && user && user.token) {
-        console.log('Products: User authenticated, fetching products...');
         try {
           const response = await getProducts();
           setProducts(response.data);
@@ -26,19 +24,16 @@ const Products = () => {
           console.error('Failed to fetch products:', error);
           setError(error.response?.data?.message || 'Failed to load products');
         }
-      } else {
-        console.log('Products: Waiting for auth...', { loading, user: !!user });
       }
     };
 
     fetchProducts();
-  }, [user, loading]); // Depend on auth state
+  }, [user, loading]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -69,9 +64,8 @@ const Products = () => {
       setForm({ name: '', barcode: '', price: '', stock: '' });
       setImageFile(null);
       setImagePreview(null);
-      // Reset file input
       document.getElementById('imageInput').value = '';
-      
+
       const response = await getProducts();
       setProducts(response.data);
     } catch (error) {
@@ -99,25 +93,23 @@ const Products = () => {
     return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/uploads/products/${imageName}`;
   };
 
-  // Show loading while auth is being checked
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading Product Management...</p>
+          <p className="text-slate-800">Loading Product Management...</p>
         </div>
       </div>
     );
   }
 
-  // Show error if user is not authenticated or not admin
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-xl font-bold text-red-600 mb-2">Authentication Required</h2>
-          <p className="text-slate-600">Please log in to access product management.</p>
+          <p className="text-slate-800">Please log in to access product management.</p>
         </div>
       </div>
     );
@@ -128,7 +120,7 @@ const Products = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
           <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-slate-600">You don't have permission to access product management.</p>
+          <p className="text-slate-800">You don't have permission to access product management.</p>
         </div>
       </div>
     );
@@ -143,8 +135,8 @@ const Products = () => {
             <Package className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Product Management</h1>
-            <p className="text-slate-600">Manage your inventory and product catalog</p>
+            <h1 className="text-3xl font-bold text-slate-900">Product Management</h1>
+            <p className="text-slate-800">Manage your inventory and product catalog</p>
           </div>
         </div>
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 rounded-xl border border-blue-200 inline-flex items-center space-x-2">
@@ -155,7 +147,6 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Show error message if there's an API error */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
           <strong>Error:</strong> {error}
@@ -170,22 +161,19 @@ const Products = () => {
               <Plus className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Add New Product</h2>
-              <p className="text-sm text-slate-600">Fill in the details to add a product to your catalog</p>
+              <h2 className="text-lg font-bold text-slate-900">Add New Product</h2>
+              <p className="text-sm text-slate-800">Fill in the details to add a product to your catalog</p>
             </div>
           </div>
         </div>
         
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Form Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column - Product Details */}
               <div className="space-y-4">
-                {/* Product Name */}
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                    <Package className="h-4 w-4 text-slate-500" />
+                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-800">
+                    <Package className="h-4 w-4 text-slate-700" />
                     <span>Product Name</span>
                   </label>
                   <input
@@ -193,16 +181,15 @@ const Products = () => {
                     placeholder="Enter product name"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-800"
                     required
                     disabled={isSubmitting}
                   />
                 </div>
 
-                {/* Barcode */}
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                    <Hash className="h-4 w-4 text-slate-500" />
+                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-800">
+                    <Hash className="h-4 w-4 text-slate-700" />
                     <span>Barcode</span>
                   </label>
                   <input
@@ -210,18 +197,16 @@ const Products = () => {
                     placeholder="Enter barcode"
                     value={form.barcode}
                     onChange={e => setForm({ ...form, barcode: e.target.value })}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-800"
                     required
                     disabled={isSubmitting}
                   />
                 </div>
 
-                {/* Price and Stock Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Price */}
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                      <DollarSign className="h-4 w-4 text-slate-500" />
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-slate-800">
+                      <DollarSign className="h-4 w-4 text-slate-700" />
                       <span>Price</span>
                     </label>
                     <input
@@ -229,7 +214,7 @@ const Products = () => {
                       placeholder="0.00"
                       value={form.price}
                       onChange={e => setForm({ ...form, price: e.target.value })}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-800"
                       step="0.01"
                       min="0"
                       required
@@ -237,10 +222,9 @@ const Products = () => {
                     />
                   </div>
 
-                  {/* Stock */}
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                      <Archive className="h-4 w-4 text-slate-500" />
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-slate-800">
+                      <Archive className="h-4 w-4 text-slate-700" />
                       <span>Stock</span>
                     </label>
                     <input
@@ -248,7 +232,7 @@ const Products = () => {
                       placeholder="0"
                       value={form.stock}
                       onChange={e => setForm({ ...form, stock: e.target.value })}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-800"
                       min="0"
                       required
                       disabled={isSubmitting}
@@ -257,15 +241,13 @@ const Products = () => {
                 </div>
               </div>
 
-              {/* Right Column - Image Upload */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-                    <Image className="h-4 w-4 text-slate-500" />
+                  <label className="flex items-center space-x-2 text-sm font-semibold text-slate-800">
+                    <Image className="h-4 w-4 text-slate-700" />
                     <span>Product Image</span>
                   </label>
                   
-                  {/* File Input */}
                   <div className="relative">
                     <input
                       id="imageInput"
@@ -277,16 +259,15 @@ const Products = () => {
                     />
                     <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
                       <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-slate-600">Click to upload image</p>
-                      <p className="text-xs text-slate-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                      <p className="text-sm font-medium text-slate-800">Click to upload image</p>
+                      <p className="text-xs text-slate-700 mt-1">PNG, JPG, GIF up to 10MB</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Image Preview */}
                 {imagePreview && (
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Image Preview</label>
+                    <label className="text-sm font-semibold text-slate-800">Image Preview</label>
                     <div className="border border-slate-300 rounded-xl overflow-hidden">
                       <img
                         src={imagePreview}
@@ -299,7 +280,6 @@ const Products = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end pt-4">
               <button 
                 type="submit" 
@@ -318,21 +298,20 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Products Table */}
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
-          <h3 className="text-lg font-bold text-slate-800">Product Catalog</h3>
-          <p className="text-sm text-slate-600">View and manage all products</p>
+          <h3 className="text-lg font-bold text-slate-900">Product Catalog</h3>
+          <p className="text-sm text-slate-800">View and manage all products</p>
         </div>
         
         <div className="overflow-x-auto">
           {products.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="h-8 w-8 text-slate-400" />
+                <Package className="h-8 w-8 text-slate-500" />
               </div>
-              <h3 className="text-lg font-medium text-slate-600 mb-2">No products found</h3>
-              <p className="text-slate-500">Add your first product using the form above</p>
+              <h3 className="text-lg font-medium text-slate-800 mb-2">No products found</h3>
+              <p className="text-slate-700">Add your first product using the form above</p>
             </div>
           ) : (
             <Table
@@ -346,24 +325,22 @@ const Products = () => {
                         src={getImageUrl(product.image)}
                         alt={product.name}
                         className="w-16 h-16 object-cover rounded-xl border border-slate-200 shadow-sm"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     ) : (
                       <div className="w-16 h-16 bg-slate-200 rounded-xl flex items-center justify-center border border-slate-300">
-                        <Package className="h-6 w-6 text-slate-400" />
+                        <Package className="h-6 w-6 text-slate-500" />
                       </div>
                     )}
                   </td>
                   <td className="border-b border-slate-200 p-6">
                     <div>
-                      <h4 className="font-semibold text-slate-800 mb-1">{product.name}</h4>
-                      <p className="text-sm text-slate-500">Product ID: {product._id.slice(-6)}</p>
+                      <h4 className="font-semibold text-slate-900 mb-1">{product.name}</h4>
+                      <p className="text-sm text-slate-700">Product ID: {product._id.slice(-6)}</p>
                     </div>
                   </td>
                   <td className="border-b border-slate-200 p-6">
-                    <code className="bg-slate-100 px-3 py-1 rounded-lg text-sm font-mono text-slate-700">
+                    <code className="bg-slate-100 px-3 py-1 rounded-lg text-sm font-mono text-slate-800">
                       {product.barcode}
                     </code>
                   </td>

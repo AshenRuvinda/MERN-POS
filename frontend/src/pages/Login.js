@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { login } from '../utils/api';
 import useAuth from '../hooks/useAuth';
+import { Eye, EyeOff, User, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useAuth();
   const history = useHistory();
 
@@ -92,65 +94,180 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          POS System Login
-        </h2>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="w-full max-w-md">
+        {/* Login Card */}
+        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-center">
+            <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <LogIn className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-blue-100 text-sm">
+              Sign in to access your POS System
+            </p>
           </div>
-        )}
-        
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">
-            Username
-          </label>
-          <input
-            type="text"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            className="border border-gray-300 p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter your username"
-            disabled={loading}
-            required
-          />
+          
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+                <div className="flex items-center">
+                  <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800">
+                      Login Error
+                    </h3>
+                    <div className="text-sm text-red-700 mt-1">
+                      {error}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Username Field */}
+            <div className="space-y-2">
+              <label 
+                htmlFor="username"
+                className="block text-sm font-semibold text-slate-700"
+              >
+                Username
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  required
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-base"
+                  placeholder="Enter your username"
+                  disabled={loading}
+                  style={{
+                    fontSize: '16px',
+                    lineHeight: '1.5',
+                    color: '#1f2937',
+                    backgroundColor: '#ffffff',
+                    fontFamily: 'inherit'
+                  }}
+                />
+              </div>
+            </div>
+            
+            {/* Password Field */}
+            <div className="space-y-2">
+              <label 
+                htmlFor="password"
+                className="block text-sm font-semibold text-slate-700"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="block w-full pl-10 pr-12 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-base"
+                  placeholder="Enter your password"
+                  disabled={loading}
+                  style={{
+                    fontSize: '16px',
+                    lineHeight: '1.5',
+                    color: '#1f2937',
+                    backgroundColor: '#ffffff',
+                    fontFamily: 'inherit'
+                  }}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full flex justify-center items-center space-x-2 py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-medium text-white transition-all duration-200 ${
+                loading 
+                  ? 'bg-slate-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+              }`}
+              style={{
+                fontSize: '16px',
+                fontFamily: 'inherit',
+                color: '#ffffff'
+              }}
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="h-5 w-5" />
+                  <span>Sign In</span>
+                </>
+              )}
+            </button>
+          </form>
+          
+          {/* Footer */}
+          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200">
+            <div className="text-center">
+              <div className="text-sm text-slate-600 space-y-2">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Admin → Dashboard</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>Cashier → POS</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Your role determines your access level
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="border border-gray-300 p-3 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter your password"
-            disabled={loading}
-            required
-          />
+        {/* Help Text */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-600">
+            Need help? Contact your system administrator
+          </p>
         </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 rounded font-medium transition duration-200 ${
-            loading 
-              ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
-        >
-          {loading ? 'Signing In...' : 'Sign In'}
-        </button>
-        
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>Admin users will be redirected to Dashboard</p>
-          <p>Cashier users will be redirected to POS</p>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };

@@ -97,14 +97,12 @@ const App = () => {
           {user && (
             <>
               <div className="flex min-h-screen">
-                {/* Show sidebar only for admin users */}
-                {user.userType === 'admin' && (
-                  <div className="flex-shrink-0">
-                    <Sidebar />
-                  </div>
-                )}
+                {/* Show fixed sidebar only for admin users */}
+                {user.userType === 'admin' && <Sidebar />}
                 
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className={`flex-1 flex flex-col min-w-0 ${
+                  user.userType === 'admin' ? 'ml-64' : ''
+                }`}>
                   <Navbar />
                   <main className="flex-1 overflow-auto">
                     <Switch>
