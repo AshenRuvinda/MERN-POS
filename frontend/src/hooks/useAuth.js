@@ -12,6 +12,8 @@ const useAuth = () => {
         const userId = localStorage.getItem('userId');
         const username = localStorage.getItem('username');
         
+        console.log('useAuth: Initializing auth with:', { token: !!token, role, userId, username });
+        
         if (token && role) {
           // Simple validation - just check if token and role exist
           setUser({ 
@@ -28,10 +30,7 @@ const useAuth = () => {
       } catch (error) {
         console.error('useAuth: Error initializing auth:', error.message);
         // Clear invalid data
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
+        clearAuthData();
         setUser(null);
       } finally {
         setLoading(false);
@@ -41,18 +40,31 @@ const useAuth = () => {
     initializeAuth();
   }, []);
 
+  const clearAuthData = () => {
+    console.log('useAuth: Clearing all auth data from localStorage');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
+  };
+
   const setUserData = (userData) => {
     console.log('useAuth: Setting user data:', userData);
     setUser(userData);
   };
 
   const logout = () => {
-    console.log('useAuth: Logging out user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('username');
+    console.log('useAuth: Starting logout process');
+    
+    // Clear localStorage
+    clearAuthData();
+    
+    // Clear user state
     setUser(null);
+    
+    // Force page reload to ensure clean state
+    console.log('useAuth: Logout complete, reloading page');
+    window.location.href = '/login';
   };
 
   return { 

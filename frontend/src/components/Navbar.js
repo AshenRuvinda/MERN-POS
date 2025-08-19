@@ -8,11 +8,27 @@ const Navbar = () => {
   const history = useHistory();
 
   const handleLogout = () => {
-    logout();
-    history.push('/login');
+    console.log('Navbar: Logout button clicked');
+    
+    if (window.confirm('Are you sure you want to logout?')) {
+      try {
+        console.log('Navbar: User confirmed logout');
+        logout();
+      } catch (error) {
+        console.error('Navbar: Error during logout:', error);
+        // Fallback logout
+        localStorage.clear();
+        window.location.href = '/login';
+      }
+    }
   };
 
-  if (!user) return null;
+  if (!user) {
+    console.log('Navbar: No user found, not rendering navbar');
+    return null;
+  }
+
+  console.log('Navbar: Rendering for user:', user);
 
   return (
     <nav className="bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-2xl border-b border-slate-700">
@@ -61,6 +77,13 @@ const Navbar = () => {
                 </p>
               </div>
             </div>
+            
+            {/* Debug Info (only in development) */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs text-slate-400 bg-slate-800/30 px-2 py-1 rounded">
+                Debug: {user.userId?.slice(-4) || 'No ID'}
+              </div>
+            )}
             
             {/* Logout Button */}
             <button

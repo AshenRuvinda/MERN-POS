@@ -2,20 +2,37 @@ import React, { useState, useEffect } from 'react';
 import Table from '../components/Table';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../utils/api';
 import { Package, Plus, Upload, Image, Trash2, DollarSign, Hash, Archive } from 'lucide-react';
+import useAuth from '../hooks/useAuth';
 
 const Products = () => {
+  const { user, loading } = useAuth();
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ name: '', barcode: '', price: '', stock: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const response = await getProducts();
-      setProducts(response.data);
+      // Only fetch if user is authenticated and not loading
+      if (!loading && user && user.token) {
+        console.log('Products: User authenticated, fetching products...');
+        try {
+          const response = await getProducts();
+          setProducts(response.data);
+          setError('');
+        } catch (error) {
+          console.error('Failed to fetch products:', error);
+          setError(error.response?.data?.message || 'Failed to load products');
+        }
+      } else {
+        console.log('Products: Waiting for auth...', { loading, user: !!user });
+      }
     };
+
     fetchProducts();
-  }, []);
+  }, [user, loading]); // Depend on auth state
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -35,6 +52,9 @@ const Products = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
     try {
       const formData = new FormData();
       formData.append('name', form.name);
@@ -55,7 +75,10 @@ const Products = () => {
       const response = await getProducts();
       setProducts(response.data);
     } catch (error) {
-      console.error(error);
+      console.error('Failed to create product:', error);
+      setError(error.response?.data?.message || 'Failed to create product');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -65,7 +88,8 @@ const Products = () => {
         await deleteProduct(id);
         setProducts(products.filter(p => p._id !== id));
       } catch (error) {
-        console.error(error);
+        console.error('Failed to delete product:', error);
+        setError(error.response?.data?.message || 'Failed to delete product');
       }
     }
   };
@@ -74,6 +98,41 @@ const Products = () => {
     if (!imageName) return null;
     return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/uploads/products/${imageName}`;
   };
+
+  // Show loading while auth is being checked
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading Product Management...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if user is not authenticated or not admin
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Authentication Required</h2>
+          <p className="text-slate-600">Please log in to access product management.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user.userType !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p className="text-slate-600">You don't have permission to access product management.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -95,6 +154,13 @@ const Products = () => {
           </span>
         </div>
       </div>
+
+      {/* Show error message if there's an API error */}
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
       
       {/* Add Product Form */}
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 mb-8 overflow-hidden">
@@ -129,6 +195,7 @@ const Products = () => {
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -145,6 +212,7 @@ const Products = () => {
                     onChange={e => setForm({ ...form, barcode: e.target.value })}
                     className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -165,6 +233,7 @@ const Products = () => {
                       step="0.01"
                       min="0"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
 
@@ -182,6 +251,7 @@ const Products = () => {
                       className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50"
                       min="0"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
@@ -203,6 +273,7 @@ const Products = () => {
                       accept="image/*"
                       onChange={handleImageChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      disabled={isSubmitting}
                     />
                     <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
                       <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
@@ -232,10 +303,15 @@ const Products = () => {
             <div className="flex justify-end pt-4">
               <button 
                 type="submit" 
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-blue-500/25 flex items-center space-x-2"
+                disabled={isSubmitting}
+                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg flex items-center space-x-2 ${
+                  isSubmitting
+                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-blue-500/25'
+                }`}
               >
                 <Plus className="h-5 w-5" />
-                <span>Add Product</span>
+                <span>{isSubmitting ? 'Adding Product...' : 'Add Product'}</span>
               </button>
             </div>
           </form>
@@ -250,66 +326,76 @@ const Products = () => {
         </div>
         
         <div className="overflow-x-auto">
-          <Table
-            headers={['Image', 'Product Details', 'Barcode', 'Price', 'Stock', 'Actions']}
-            data={products}
-            renderRow={product => (
-              <tr key={product._id} className="hover:bg-slate-50 transition-colors duration-200">
-                <td className="border-b border-slate-200 p-6">
-                  {product.image ? (
-                    <img
-                      src={getImageUrl(product.image)}
-                      alt={product.name}
-                      className="w-16 h-16 object-cover rounded-xl border border-slate-200 shadow-sm"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-16 h-16 bg-slate-200 rounded-xl flex items-center justify-center border border-slate-300">
-                      <Package className="h-6 w-6 text-slate-400" />
+          {products.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package className="h-8 w-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-medium text-slate-600 mb-2">No products found</h3>
+              <p className="text-slate-500">Add your first product using the form above</p>
+            </div>
+          ) : (
+            <Table
+              headers={['Image', 'Product Details', 'Barcode', 'Price', 'Stock', 'Actions']}
+              data={products}
+              renderRow={product => (
+                <tr key={product._id} className="hover:bg-slate-50 transition-colors duration-200">
+                  <td className="border-b border-slate-200 p-6">
+                    {product.image ? (
+                      <img
+                        src={getImageUrl(product.image)}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded-xl border border-slate-200 shadow-sm"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-slate-200 rounded-xl flex items-center justify-center border border-slate-300">
+                        <Package className="h-6 w-6 text-slate-400" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="border-b border-slate-200 p-6">
+                    <div>
+                      <h4 className="font-semibold text-slate-800 mb-1">{product.name}</h4>
+                      <p className="text-sm text-slate-500">Product ID: {product._id.slice(-6)}</p>
                     </div>
-                  )}
-                </td>
-                <td className="border-b border-slate-200 p-6">
-                  <div>
-                    <h4 className="font-semibold text-slate-800 mb-1">{product.name}</h4>
-                    <p className="text-sm text-slate-500">Product ID: {product._id.slice(-6)}</p>
-                  </div>
-                </td>
-                <td className="border-b border-slate-200 p-6">
-                  <code className="bg-slate-100 px-3 py-1 rounded-lg text-sm font-mono text-slate-700">
-                    {product.barcode}
-                  </code>
-                </td>
-                <td className="border-b border-slate-200 p-6">
-                  <div className="flex items-center space-x-1">
-                    <DollarSign className="h-4 w-4 text-emerald-600" />
-                    <span className="font-semibold text-emerald-600 text-lg">{product.price}</span>
-                  </div>
-                </td>
-                <td className="border-b border-slate-200 p-6">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    product.stock > 20 ? 'bg-green-100 text-green-800' : 
-                    product.stock > 10 ? 'bg-yellow-100 text-yellow-800' : 
-                    product.stock > 0 ? 'bg-orange-100 text-orange-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {product.stock} units
-                  </span>
-                </td>
-                <td className="border-b border-slate-200 p-6">
-                  <button
-                    onClick={() => handleDelete(product._id)}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-red-500/25 flex items-center space-x-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
-                  </button>
-                </td>
-              </tr>
-            )}
-          />
+                  </td>
+                  <td className="border-b border-slate-200 p-6">
+                    <code className="bg-slate-100 px-3 py-1 rounded-lg text-sm font-mono text-slate-700">
+                      {product.barcode}
+                    </code>
+                  </td>
+                  <td className="border-b border-slate-200 p-6">
+                    <div className="flex items-center space-x-1">
+                      <DollarSign className="h-4 w-4 text-emerald-600" />
+                      <span className="font-semibold text-emerald-600 text-lg">{product.price}</span>
+                    </div>
+                  </td>
+                  <td className="border-b border-slate-200 p-6">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      product.stock > 20 ? 'bg-green-100 text-green-800' : 
+                      product.stock > 10 ? 'bg-yellow-100 text-yellow-800' : 
+                      product.stock > 0 ? 'bg-orange-100 text-orange-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {product.stock} units
+                    </span>
+                  </td>
+                  <td className="border-b border-slate-200 p-6">
+                    <button
+                      onClick={() => handleDelete(product._id)}
+                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-red-500/25 flex items-center space-x-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete</span>
+                    </button>
+                  </td>
+                </tr>
+              )}
+            />
+          )}
         </div>
       </div>
     </div>

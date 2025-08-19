@@ -3,19 +3,35 @@ import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
 import { getProducts, createSale } from '../utils/api';
 import { Search, Filter, Grid, BarChart3 } from 'lucide-react';
+import useAuth from '../hooks/useAuth';
 
 const POS = () => {
+  const { user, loading } = useAuth();
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const response = await getProducts();
-      setProducts(response.data);
+      // Only fetch if user is authenticated and not loading
+      if (!loading && user && user.token) {
+        console.log('POS: User authenticated, fetching products...');
+        try {
+          const response = await getProducts();
+          setProducts(response.data);
+          setError('');
+        } catch (error) {
+          console.error('Failed to fetch products:', error);
+          setError(error.response?.data?.message || 'Failed to load products');
+        }
+      } else {
+        console.log('POS: Waiting for auth...', { loading, user: !!user });
+      }
     };
+
     fetchProducts();
-  }, []);
+  }, [user, loading]); // Depend on auth state
 
   const addToCart = product => {
     const existing = cart.find(item => item.productId === product._id);
@@ -69,6 +85,30 @@ const POS = () => {
   const getTotalItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
+
+  // Show loading while auth is being checked
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading POS System...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Authentication Required</h2>
+          <p className="text-slate-600">Please log in to access the POS system.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -131,6 +171,13 @@ const POS = () => {
 
       {/* Main Content */}
       <div className="p-6">
+        {/* Show error message if there's an API error */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products Grid */}
           <div className="lg:col-span-2">
@@ -147,8 +194,12 @@ const POS = () => {
                   <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Search className="h-8 w-8 text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-slate-600 mb-2">No products found</h3>
-                  <p className="text-slate-500">Try adjusting your search terms</p>
+                  <h3 className="text-lg font-medium text-slate-600 mb-2">
+                    {products.length === 0 ? 'Loading products...' : 'No products found'}
+                  </h3>
+                  <p className="text-slate-500">
+                    {products.length === 0 ? 'Please wait while we load your inventory' : 'Try adjusting your search terms'}
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
