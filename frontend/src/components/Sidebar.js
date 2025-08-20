@@ -116,7 +116,7 @@ const Sidebar = () => {
             All systems operational
           </p>
           <p className="text-xs text-slate-500 mt-1">
-            © 2025 POS System
+            © 2025 POS 1.1 - All rights reserved
           </p>
         </div>
       </div>
