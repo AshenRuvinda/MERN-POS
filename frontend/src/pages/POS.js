@@ -2,21 +2,11 @@ import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
 import { getProducts, createSale } from '../utils/api';
-import { Search, Filter, Grid, BarChart3, ShoppingCart } from 'lucide-react';
+import { Search, Filter, Grid, BarChart3 } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
-import { useUIDialogs } from '../components/UIDialogs';
 
 const POS = () => {
   const { user, loading } = useAuth();
-  const { 
-    showSuccess, 
-    showError, 
-    showConfirm, 
-    showLoading, 
-    hideLoading, 
-    DialogComponents 
-  } = useUIDialogs();
-  
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
@@ -33,9 +23,7 @@ const POS = () => {
           setError('');
         } catch (error) {
           console.error('Failed to fetch products:', error);
-          const errorMessage = error.response?.data?.message || 'Failed to load products';
-          setError(errorMessage);
-          showError(errorMessage);
+          setError(error.response?.data?.message || 'Failed to load products');
         }
       } else {
         console.log('POS: Waiting for auth...', { loading, user: !!user });
@@ -43,9 +31,9 @@ const POS = () => {
     };
 
     fetchProducts();
-  }, [user, loading, showError]); // Depend on auth state
+  }, [user, loading]); // Depend on auth state
 
-  const addToCart = (product) => {
+  const addToCart = product => {
     const existing = cart.find(item => item.productId === product._id);
     if (existing) {
       setCart(
@@ -64,17 +52,9 @@ const POS = () => {
         image: product.image
       }]);
     }
-    
-    // Show success feedback
-    showSuccess(`${product.name} added to cart!`);
   };
 
   const updateQuantity = (productId, quantity) => {
-    if (quantity < 1) {
-      removeFromCart(productId);
-      return;
-    }
-    
     setCart(
       cart.map(item =>
         item.productId === productId ? { ...item, quantity: parseInt(quantity) } : item
@@ -82,62 +62,18 @@ const POS = () => {
     );
   };
 
-  const removeFromCart = async (productId) => {
-    const product = cart.find(item => item.productId === productId);
-    if (!product) return;
-
-    const confirmed = await showConfirm(
-      "Remove Item",
-      `Remove ${product.name} from cart?`,
-      {
-        type: 'warning',
-        confirmText: 'Remove',
-        cancelText: 'Keep in Cart'
-      }
-    );
-
-    if (confirmed) {
-      setCart(cart.filter(item => item.productId !== productId));
-      showSuccess(`${product.name} removed from cart`);
-    }
-  };
-
-  const getTotalAmount = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+  const removeFromCart = productId => {
+    setCart(cart.filter(item => item.productId !== productId));
   };
 
   const checkout = async () => {
-    if (cart.length === 0) {
-      showError('Your cart is empty. Add some products before checkout.');
-      return;
-    }
-
-    const totalAmount = getTotalAmount();
-    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-
-    const confirmed = await showConfirm(
-      "Process Sale",
-      `Process sale for ${totalItems} item${totalItems > 1 ? 's' : ''} totaling $${totalAmount}? This will update inventory and complete the transaction.`,
-      {
-        type: 'info',
-        confirmText: 'Process Sale',
-        cancelText: 'Continue Shopping',
-        icon: <ShoppingCart className="h-6 w-6 text-white" />
-      }
-    );
-
-    if (confirmed) {
-      showLoading("Processing sale...");
-      try {
-        await createSale({ products: cart });
-        setCart([]);
-        hideLoading();
-        showSuccess(`Sale completed successfully! Total: $${totalAmount}. Receipt has been generated.`);
-      } catch (error) {
-        console.error('Checkout error:', error);
-        hideLoading();
-        showError(error.response?.data?.message || 'Error processing sale. Please try again.');
-      }
+    try {
+      await createSale({ products: cart });
+      setCart([]);
+      alert('Sale completed successfully!');
+    } catch (error) {
+      console.error(error);
+      alert('Error processing sale. Please try again.');
     }
   };
 
@@ -235,6 +171,13 @@ const POS = () => {
 
       {/* Main Content */}
       <div className="p-6">
+        {/* Show error message if there's an API error */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products Grid */}
           <div className="lg:col-span-2">
@@ -283,9 +226,6 @@ const POS = () => {
           </div>
         </div>
       </div>
-
-      {/* Render UI Dialogs */}
-      <DialogComponents />
     </div>
   );
 };
