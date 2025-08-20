@@ -1,10 +1,176 @@
 import React from 'react';
-import { ShoppingCart, Minus, Plus, X, CreditCard, Package } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, X, CreditCard, Package, Receipt } from 'lucide-react';
 
 const Cart = ({ cart, updateQuantity, removeFromCart, checkout }) => {
   const getImageUrl = (imageName) => {
     if (!imageName) return null;
     return `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/uploads/products/${imageName}`;
+  };
+
+  const getCashierName = () => {
+    // Get user data from localStorage (stored during login)
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.userType === 'cashier') {
+        return `${user.firstName} ${user.lastName}`;
+      } else if (user.userType === 'admin') {
+        return user.username;
+      }
+    }
+    return 'Unknown Cashier';
+  };
+
+  const generateReceipt = () => {
+    // Get cashier name from stored user data
+    const cashierName = getCashierName();
+    
+    const receiptWindow = window.open('', '_blank');
+    const receiptContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            max-width: 400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.4;
+          }
+          .logo-section {
+            text-align: center;
+            margin-bottom: 15px;
+          }
+          .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 10px;
+          }
+          .company-info {
+            text-align: center;
+            margin-bottom: 10px;
+          }
+          .company-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 5px;
+          }
+          .header { 
+            text-align: center; 
+            border-bottom: 2px solid #000; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+          }
+          .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+          }
+          .item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 8px; 
+            border-bottom: 1px dotted #ccc; 
+            padding-bottom: 5px; 
+          }
+          .total { 
+            border-top: 2px solid #000; 
+            margin-top: 15px; 
+            padding-top: 10px; 
+            font-weight: bold; 
+            font-size: 1.2em; 
+          }
+          .cashier-info {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 0.9em;
+          }
+          .footer { 
+            text-align: center; 
+            margin-top: 20px; 
+            padding-top: 15px; 
+            border-top: 1px solid #ccc; 
+            color: #666; 
+            font-size: 0.9em;
+          }
+          @media print {
+            body { margin: 0; padding: 10px; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="logo-section">
+          <div class="logo-placeholder">
+            SHOP LOGO
+          </div>
+          <div class="company-info">
+            <div class="company-name">Your Store Name</div>
+            <div style="font-size: 0.9em; color: #666;">
+              123 Store Address, City, State 12345<br>
+              Phone: (555) 123-4567
+            </div>
+          </div>
+        </div>
+        
+        <div class="header">
+          <h2>PURCHASE RECEIPT</h2>
+          <div class="receipt-info">
+            <span>Receipt #: ${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+            <span>Date: ${new Date().toLocaleDateString()}</span>
+          </div>
+          <div class="receipt-info">
+            <span>Time: ${new Date().toLocaleTimeString()}</span>
+            <span>Items: ${cart.length}</span>
+          </div>
+        </div>
+        
+        ${cart.map(item => `
+          <div class="item">
+            <div>
+              <div>${item.name}</div>
+              <div style="font-size: 0.9em; color: #666;">
+                ${item.price} x ${item.quantity}
+              </div>
+            </div>
+            <div>${(item.price * item.quantity).toFixed(2)}</div>
+          </div>
+        `).join('')}
+        
+        <div class="total">
+          <div style="display: flex; justify-content: space-between;">
+            <span>TOTAL:</span>
+            <span>${getTotalAmount()}</span>
+          </div>
+        </div>
+        
+        <div class="cashier-info">
+          <strong>Served by: ${cashierName}</strong>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Thank you for your purchase!</strong></p>
+          <p>Please keep this receipt for your records</p>
+          <p style="font-size: 0.8em;">Receipt generated on ${new Date().toLocaleString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    receiptWindow.document.write(receiptContent);
+    receiptWindow.document.close();
+    receiptWindow.print();
   };
 
   const getTotalAmount = () => {
@@ -140,14 +306,26 @@ const Cart = ({ cart, updateQuantity, removeFromCart, checkout }) => {
                 </div>
               </div>
 
-              {/* Checkout Button */}
-              <button
-                onClick={checkout}
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center space-x-2"
-              >
-                <CreditCard className="h-5 w-5" />
-                <span>Proceed to Checkout</span>
-              </button>
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                {/* Generate Receipt Button */}
+                <button
+                  onClick={generateReceipt}
+                  className="flex-1 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-slate-500/25 flex items-center justify-center space-x-2"
+                >
+                  <Receipt className="h-5 w-5" />
+                  <span>Generate Receipt</span>
+                </button>
+
+                {/* Checkout Button */}
+                <button
+                  onClick={checkout}
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center space-x-2"
+                >
+                  <CreditCard className="h-5 w-5" />
+                  <span>Checkout</span>
+                </button>
+              </div>
             </div>
           </div>
         </>
