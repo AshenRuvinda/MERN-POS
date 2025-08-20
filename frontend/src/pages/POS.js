@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
+import CalculatorPopup from '../components/CalculatorPopup';
 import { getProducts, createSale } from '../utils/api';
 import { Search, Filter, Grid, BarChart3 } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
@@ -11,6 +12,7 @@ const POS = () => {
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -226,6 +228,12 @@ const POS = () => {
           </div>
         </div>
       </div>
+
+      {/* Calculator Popup */}
+      <CalculatorPopup
+        isOpen={isCalculatorOpen}
+        onToggle={() => setIsCalculatorOpen(!isCalculatorOpen)}
+      />
     </div>
   );
 };
