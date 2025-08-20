@@ -8,17 +8,41 @@ const Cart = ({ cart, updateQuantity, removeFromCart, checkout }) => {
   };
 
   const getCashierName = () => {
-    // Get user data from localStorage (stored during login)
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      if (user.userType === 'cashier') {
-        return `${user.firstName} ${user.lastName}`;
-      } else if (user.userType === 'admin') {
-        return user.username;
+    try {
+      // Get user data from localStorage (stored during login)
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log('User data from localStorage:', user); // Debug log
+        
+        if (user.userType === 'cashier') {
+          // Try to get first and last name, fallback to username
+          if (user.firstName && user.lastName) {
+            return `${user.firstName} ${user.lastName}`;
+          }
+          // Fallback to username if names are not available
+          return user.username || 'Unknown Cashier';
+        } else if (user.userType === 'admin') {
+          return user.username || 'Administrator';
+        }
       }
+      
+      // Additional fallback: try to get from token if user data is not properly stored
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+          return tokenPayload.username || 'Unknown User';
+        } catch (tokenError) {
+          console.error('Error parsing token:', tokenError);
+        }
+      }
+      
+      return 'Unknown Cashier';
+    } catch (error) {
+      console.error('Error getting cashier name:', error);
+      return 'Unknown Cashier';
     }
-    return 'Unknown Cashier';
   };
 
   const generateReceipt = () => {
@@ -113,13 +137,16 @@ const Cart = ({ cart, updateQuantity, removeFromCart, checkout }) => {
       <body>
         <div class="logo-section">
           <div class="logo-placeholder">
-            SHOP LOGO
+            <img src="https://github.com/AshenRuvinda/ProjectImages/blob/master/WhatsApp%20Image%202025-08-20%20at%203.11.05%20PM.jpeg?raw=true" alt="Jilani Super Logo" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div style="width: 80px; height: 80px; border: 2px dashed #ccc; border-radius: 8px; display: none; align-items: center; justify-content: center; color: #999; font-size: 12px;">
+              JILANI SUPER
+            </div>
           </div>
           <div class="company-info">
-            <div class="company-name">Your Store Name</div>
+            <div class="company-name">Jilani Super</div>
             <div style="font-size: 0.9em; color: #666;">
-              123 Store Address, City, State 12345<br>
-              Phone: (555) 123-4567
+              No 46, Main Street, Eheliyagoda<br>
+              Phone: 0112458739
             </div>
           </div>
         </div>
