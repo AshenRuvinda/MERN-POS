@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import AdminRegister from './pages/AdminRegister';
 import Register from './pages/Register';
@@ -12,17 +13,6 @@ import Stock from './pages/Stock';
 import Reports from './pages/Reports';
 import Users from './pages/Users';
 import useAuth from './hooks/useAuth';
-
-// Loading component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
-      <h2 className="text-xl font-semibold text-slate-700 mb-2">Loading POS System</h2>
-      <p className="text-slate-500">Please wait...</p>
-    </div>
-  </div>
-);
 
 // Route protection component
 const ProtectedRoute = ({ component: Component, allowedRoles, user, ...rest }) => {
@@ -72,11 +62,15 @@ const App = () => {
   
   console.log('App.js: Current state:', { user: !!user, userType: user?.userType, loading });
 
-  // Show loading spinner while checking authentication
-  if (loading) {
-    console.log('App.js: Still loading auth state');
-    return <LoadingSpinner />;
-  }
+  // Hide the initial loading screen once auth check is complete
+  useEffect(() => {
+    if (!loading) {
+      // Auth check is complete, hide the loading screen
+      if (typeof window !== 'undefined' && window.hideLoadingScreen) {
+        window.hideLoadingScreen();
+      }
+    }
+  }, [loading]);
 
   return (
     <Router>
@@ -85,11 +79,10 @@ const App = () => {
           {/* Public routes - only accessible when not logged in */}
           {!user && (
             <>
+              <Route exact path="/" component={Landing} />
               <Route path="/admin-register" component={AdminRegister} />
               <Route path="/login" component={Login} />
-              <Route exact path="/">
-                <Redirect to="/login" />
-              </Route>
+              <Route path="/register" component={Register} />
             </>
           )}
 

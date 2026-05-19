@@ -229,10 +229,9 @@ const Users = () => {
                   type="text"
                   placeholder="Enter username"
                   value={form.username}
-                  onChange={e => setForm({ ...form, username: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-900 placeholder-slate-500"
+                  onInput={(e) => setForm({ ...form, username: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-500"
                   required
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -245,10 +244,9 @@ const Users = () => {
                   type="password"
                   placeholder="Enter password"
                   value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-900 placeholder-slate-500"
+                  onInput={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-500"
                   required
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -260,8 +258,7 @@ const Users = () => {
                 <select
                   value={form.role}
                   onChange={e => setForm({ ...form, role: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50/50 text-slate-900"
-                  disabled={isSubmitting}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900"
                 >
                   <option value="admin">Administrator</option>
                   <option value="cashier">Cashier</option>
@@ -319,8 +316,8 @@ const Users = () => {
               type="text"
               placeholder="Search by username or role..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-500 bg-white"
+              onInput={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 bg-white"
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
               <div className="bg-slate-100 p-2 rounded-lg">

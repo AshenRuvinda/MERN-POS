@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Table from '../components/Table';
 import { getProducts, updateStock } from '../utils/api';
 import useAuth from '../hooks/useAuth';
+import { formatLkr } from '../utils/currency';
 import { 
   Package, 
   TrendingUp, 
@@ -119,11 +120,8 @@ const Stock = () => {
   // Show loading while auth is being checked
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading Stock Management...</p>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-black border-t-white"></div>
       </div>
     );
   }
@@ -335,7 +333,7 @@ const Stock = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-slate-500">Price:</span>
-                          <span className="font-semibold text-emerald-600">${product.price}</span>
+                          <span className="font-semibold text-emerald-600">{formatLkr(product.price)}</span>
                         </div>
                       </div>
                     </td>

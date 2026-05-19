@@ -1,32 +1,63 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUserState] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+
     if (token && role) {
-      setUser({ token, role });
+      setUserState({
+        userType: role,
+        userId,
+        username,
+        token
+      });
+    } else {
+      setUserState(null);
     }
+
+    setLoading(false);
   }, []);
 
-  const setUserData = ({ token, role }) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
-    setUser({ token, role });
-  };
+  const setUser = useCallback((userData) => {
+    if (!userData) {
+      logout();
+      return;
+    }
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    setUser(null);
-  };
+    const { userType, userId, username, token } = userData;
+
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', userType);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('username', username);
+
+    setUserState(userData);
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.clear();
+    setUserState(null);
+  }, []);
+
+  // 🔥 IMPORTANT FIX: split context to avoid rerendering whole app on user change
+  const authActions = useMemo(() => ({ setUser, logout }), [setUser, logout]);
+
+  const value = useMemo(() => ({
+    user,
+    loading,
+    ...authActions
+  }), [user, loading, authActions]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser: setUserData, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import { getProducts, getSales, getUsers, getReports } from '../utils/api';
+import { formatLkr } from '../utils/currency';
 import { 
   LayoutDashboard, 
   Package, 
   TrendingUp, 
   Users, 
-  DollarSign, 
+  Banknote, 
   ShoppingCart,
   AlertTriangle,
   Calendar,
@@ -30,6 +31,8 @@ const Dashboard = () => {
     users: [],
     reports: { daily: [], weekly: [], monthly: [] }
   });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalSales: 0,
@@ -41,6 +44,58 @@ const Dashboard = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const formatRelativeTime = (dateValue) => {
+    const date = new Date(dateValue);
+    const difference = Date.now() - date.getTime();
+    const seconds = Math.floor(difference / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return 'just now';
+    if (minutes < 60) return `${minutes} min ago`;
+    if (hours < 24) return `${hours} hr ago`;
+    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    return date.toLocaleDateString();
+  };
+
+  const buildRecentActivity = (products, sales) => {
+    const activity = [];
+
+    sales
+      .filter((sale) => sale?.createdAt)
+      .forEach((sale) => {
+        activity.push({
+          type: 'sale',
+          activity: `Sale completed - ${formatLkr(sale.total || 0)}`,
+          time: formatRelativeTime(sale.createdAt),
+          timestamp: new Date(sale.createdAt).getTime(),
+        });
+      });
+
+    products
+      .filter((product) => product?.updatedAt || product?.createdAt)
+      .forEach((product) => {
+        const createdAt = product.createdAt ? new Date(product.createdAt) : null;
+        const updatedAt = product.updatedAt ? new Date(product.updatedAt) : createdAt;
+        const isNewItem = createdAt && updatedAt && Math.abs(updatedAt.getTime() - createdAt.getTime()) < 60000;
+        const timestamp = (updatedAt || createdAt || new Date()).getTime();
+
+        activity.push({
+          type: isNewItem ? 'product' : 'stock',
+          activity: isNewItem
+            ? `New product added - ${product.name}`
+            : `Stock updated - ${product.name} (${product.stock})`,
+          time: formatRelativeTime(timestamp),
+          timestamp,
+        });
+      });
+
+    return activity
+      .sort((left, right) => right.timestamp - left.timestamp)
+      .slice(0, 5);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -101,6 +156,9 @@ const Dashboard = () => {
             thisMonthSales
           });
 
+          setRecentActivity(buildRecentActivity(products, sales));
+          setLastUpdated(new Date());
+
         } catch (error) {
           console.error('Dashboard: Error fetching data:', error);
           setError('Failed to load dashboard data');
@@ -111,16 +169,16 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
+    const intervalId = window.setInterval(fetchDashboardData, 15000);
+
+    return () => window.clearInterval(intervalId);
   }, [user, loading]);
 
   // Show loading while auth is being checked
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading Dashboard...</p>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-black border-t-white"></div>
       </div>
     );
   }
@@ -235,7 +293,7 @@ const Dashboard = () => {
           </div>
           <div className="text-right">
             <p className="text-sm text-slate-500">Last updated</p>
-            <p className="text-sm font-medium text-slate-700">{new Date().toLocaleString()}</p>
+            <p className="text-sm font-medium text-slate-700">{lastUpdated.toLocaleString()}</p>
           </div>
         </div>
 
@@ -258,8 +316,8 @@ const Dashboard = () => {
         />
         <StatCard
           title="Total Sales"
-          value={`$${stats.thisMonthSales.toFixed(2)}`}
-          icon={<DollarSign className="h-6 w-6 text-white" />}
+          value={formatLkr(stats.thisMonthSales)}
+          icon={<Banknote className="h-6 w-6 text-white" />}
           color={{ bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', shadow: 'shadow-lg shadow-emerald-500/25' }}
           trend="up"
           trendValue="This month"
@@ -293,7 +351,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="text-3xl font-bold text-emerald-600 mb-2">
-            ${stats.todaysSales.toFixed(2)}
+            {formatLkr(stats.todaysSales)}
           </div>
           <p className="text-sm text-slate-600">Sales made today</p>
         </div>
@@ -306,7 +364,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="text-3xl font-bold text-blue-600 mb-2">
-            ${stats.thisWeekSales.toFixed(2)}
+            {formatLkr(stats.thisWeekSales)}
           </div>
           <p className="text-sm text-slate-600">Weekly performance</p>
         </div>
@@ -319,7 +377,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="text-3xl font-bold text-purple-600 mb-2">
-            ${stats.thisMonthSales.toFixed(2)}
+            {formatLkr(stats.thisMonthSales)}
           </div>
           <p className="text-sm text-slate-600">Monthly revenue</p>
         </div>
@@ -377,47 +435,32 @@ const Dashboard = () => {
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                <p className="text-sm text-slate-500">Loading activity...</p>
+                <p className="text-sm text-slate-500">Loading live activity...</p>
               </div>
+            ) : recentActivity.length > 0 ? (
+              recentActivity.map((item, index) => (
+                <RecentActivityItem
+                  key={`${item.type}-${index}-${item.timestamp}`}
+                  activity={item.activity}
+                  time={item.time}
+                  type={item.type}
+                />
+              ))
             ) : (
-              <>
-                <RecentActivityItem
-                  activity="New product added to inventory"
-                  time="2 hours ago"
-                  type="product"
-                />
-                <RecentActivityItem
-                  activity="Sale completed - $45.99"
-                  time="3 hours ago"
-                  type="sale"
-                />
-                <RecentActivityItem
-                  activity="Stock updated for 5 items"
-                  time="5 hours ago"
-                  type="stock"
-                />
-                <RecentActivityItem
-                  activity="New cashier registered"
-                  time="1 day ago"
-                  type="user"
-                />
-                <RecentActivityItem
-                  activity="Sale completed - $123.45"
-                  time="1 day ago"
-                  type="sale"
-                />
-                
-                <div className="pt-4 border-t border-slate-100">
-                  <Link 
-                    to="/reports"
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
-                  >
-                    <span>View all activity</span>
-                    <ArrowUpRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </>
+              <div className="text-center py-8 text-sm text-slate-500">
+                No recent activity yet.
+              </div>
             )}
+
+            <div className="pt-4 border-t border-slate-100">
+              <Link 
+                to="/reports"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
+              >
+                <span>View all activity</span>
+                <ArrowUpRight className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>

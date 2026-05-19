@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { login } from '../utils/api';
 import useAuth from '../hooks/useAuth';
 import { Eye, EyeOff, User, Lock, LogIn, AlertCircle } from 'lucide-react';
@@ -11,6 +11,11 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useAuth();
   const history = useHistory();
+  const location = useLocation();
+  
+  // Get role from query parameter
+  const searchParams = new URLSearchParams(location.search);
+  const roleParam = searchParams.get('role') || 'login';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,39 +99,27 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
-        {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-center">
-            <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <LogIn className="h-8 w-8 text-white" />
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-900 text-white mb-4">
+              <LogIn className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">
-              Welcome Back
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {roleParam === 'admin' ? 'Admin Login' : roleParam === 'cashier' ? 'Cashier Login' : 'Sign In'}
             </h1>
-            <p className="text-blue-100 text-sm">
-              Sign in to access your POS System
+            <p className="mt-2 text-sm text-slate-600">
+              Use your account to access the POS system.
             </p>
           </div>
-          
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-                  <div>
-                    <h3 className="text-sm font-medium text-red-800">
-                      Login Error
-                    </h3>
-                    <div className="text-sm text-red-700 mt-1">
-                      {error}
-                    </div>
-                  </div>
-                </div>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
             
@@ -146,20 +139,12 @@ const Login = () => {
                   id="username"
                   name="username"
                   type="text"
-                  autoComplete="username"
+                  autoComplete="off"
                   required
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
-                  className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-base"
+                  className="block w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-slate-900 placeholder-slate-500"
                   placeholder="Enter your username"
-                  disabled={loading}
-                  style={{
-                    fontSize: '16px',
-                    lineHeight: '1.5',
-                    color: '#1f2937',
-                    backgroundColor: '#ffffff',
-                    fontFamily: 'inherit'
-                  }}
                 />
               </div>
             </div>
@@ -180,20 +165,12 @@ const Login = () => {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="off"
                   required
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="block w-full pl-10 pr-12 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white font-medium text-base"
+                  className="block w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-12 text-slate-900 placeholder-slate-500"
                   placeholder="Enter your password"
-                  disabled={loading}
-                  style={{
-                    fontSize: '16px',
-                    lineHeight: '1.5',
-                    color: '#1f2937',
-                    backgroundColor: '#ffffff',
-                    fontFamily: 'inherit'
-                  }}
                 />
                 <button
                   type="button"
@@ -214,16 +191,9 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center items-center space-x-2 py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-medium text-white transition-all duration-200 ${
-                loading 
-                  ? 'bg-slate-400 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+              className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-white transition-colors ${
+                loading ? 'cursor-not-allowed bg-slate-400' : 'bg-slate-900 hover:bg-slate-800'
               }`}
-              style={{
-                fontSize: '16px',
-                fontFamily: 'inherit',
-                color: '#ffffff'
-              }}
             >
               {loading ? (
                 <>
@@ -239,33 +209,23 @@ const Login = () => {
             </button>
           </form>
           
-          {/* Footer */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200">
-            <div className="text-center">
-              <div className="text-sm text-slate-600 space-y-2">
-                <div className="flex items-center justify-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>Admin → Dashboard</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                    <span>Cashier → POS</span>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  Your role determines your access level
-                </p>
-              </div>
+          <div className="mt-5 text-center text-sm text-slate-500">
+            <div className="flex justify-center gap-4">
+              <span>Admin to Dashboard</span>
+              <span>Cashier to POS</span>
             </div>
           </div>
         </div>
         
         {/* Help Text */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-slate-600">
-            Need help? Contact your system administrator
-          </p>
+        <div className="mt-6 text-center space-y-3 text-sm text-slate-600">
+          <p>Need help? Contact your system administrator</p>
+          <button
+            onClick={() => history.push('/')}
+            className="font-medium text-slate-900 hover:underline"
+          >
+            ← Back to Portal
+          </button>
         </div>
       </div>
     </div>

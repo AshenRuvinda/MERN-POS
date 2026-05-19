@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
-  BarChart3, 
   FileText, 
   Users, 
   UserPlus,
@@ -27,16 +26,16 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="fixed left-0 top-0 w-64 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white h-screen border-r border-slate-700 flex flex-col overflow-y-auto z-40">
+    <div className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col overflow-y-auto border-r border-emerald-200 bg-white text-slate-800 shadow-sm">
       {/* Sidebar Header */}
-      <div className="p-6 border-b border-slate-700 flex-shrink-0">
+      <div className="flex-shrink-0 border-b border-emerald-200 bg-gradient-to-r from-emerald-600 to-teal-600 p-6">
         <div className="flex items-center space-x-3">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-lg shadow-lg">
+          <div className="rounded-lg bg-white/20 p-2 shadow-sm">
             <LayoutDashboard className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-200">Admin Panel</h2>
-            <p className="text-xs text-slate-400">Management Console</p>
+            <h2 className="text-lg font-bold text-white">Admin Panel</h2>
+            <p className="text-xs text-emerald-100">Management Console</p>
           </div>
         </div>
       </div>
@@ -54,21 +53,21 @@ const Sidebar = () => {
                 to={item.path}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group border ${
                   isActive 
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-400 shadow-lg shadow-blue-500/25' 
-                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white border-transparent hover:border-slate-600/50'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-500 shadow-md shadow-emerald-500/20' 
+                    : 'text-slate-700 hover:bg-emerald-50 hover:text-slate-900 border-transparent hover:border-emerald-200'
                 }`}
               >
                 <div className={`p-2 rounded-lg transition-all duration-200 ${
                   isActive 
                     ? 'bg-white/20' 
-                    : 'bg-slate-700/50 group-hover:bg-slate-600/80'
+                    : 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
                 }`}>
                   <IconComponent className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <span className="font-medium text-sm block">{item.label}</span>
                   <span className={`text-xs ${
-                    isActive ? 'text-blue-100' : 'text-slate-400 group-hover:text-slate-300'
+                    isActive ? 'text-emerald-100' : 'text-slate-500 group-hover:text-slate-600'
                   }`}>
                     {item.description}
                   </span>
@@ -84,19 +83,19 @@ const Sidebar = () => {
         </div>
 
         {/* Quick Stats Section */}
-        <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3">Quick Access</h3>
+        <div className="mt-8 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <h3 className="mb-3 text-sm font-semibold text-emerald-800">Quick Access</h3>
           <div className="space-y-2">
             <Link
               to="/products"
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-blue-400 hover:bg-blue-500/10 transition-colors text-xs"
+              className="flex items-center space-x-2 rounded-lg px-3 py-2 text-xs text-slate-700 transition-colors hover:bg-white hover:text-emerald-700"
             >
               <Package className="h-3 w-3" />
               <span>Add Product</span>
             </Link>
             <Link
               to="/register"
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors text-xs"
+              className="flex items-center space-x-2 rounded-lg px-3 py-2 text-xs text-slate-700 transition-colors hover:bg-white hover:text-emerald-700"
             >
               <UserPlus className="h-3 w-3" />
               <span>Add Cashier</span>
@@ -106,16 +105,16 @@ const Sidebar = () => {
       </nav>
       
       {/* Footer */}
-      <div className="p-4 border-t border-slate-700 flex-shrink-0">
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg p-3 border border-slate-600">
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium text-slate-300">System Status</span>
+      <div className="flex-shrink-0 border-t border-emerald-200 p-4">
+        <div className="rounded-lg border border-emerald-200 bg-white p-3">
+          <div className="mb-2 flex items-center space-x-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></div>
+            <span className="text-xs font-medium text-slate-700">System Status</span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-600">
             All systems operational
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="mt-1 text-xs text-slate-400">
             © 2025 POS 1.1 - All rights reserved
           </p>
         </div>

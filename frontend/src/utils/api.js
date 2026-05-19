@@ -21,6 +21,7 @@ export const updateUser = (id, data) => api.put(`/users/${id}`, data);
 
 // Product operations
 export const getProducts = () => api.get('/products');
+export const getProductCategories = () => api.get('/products/categories');
 
 export const createProduct = (productData) => {
   // Handle both regular object and FormData

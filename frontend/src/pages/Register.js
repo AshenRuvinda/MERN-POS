@@ -1,19 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { register } from '../utils/api';
 import useAuth from '../hooks/useAuth';
-import { 
-  UserPlus, 
-  User, 
-  Lock, 
-  Calendar, 
-  Phone, 
-  Check, 
-  X,
-  AlertCircle,
-  Shield,
-  ArrowRight
-} from 'lucide-react';
+import { UserPlus, User, Lock, Calendar, Phone, Check, X, AlertCircle, Shield } from 'lucide-react';
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -30,6 +19,12 @@ const Register = () => {
   const { user, loading } = useAuth();
   const history = useHistory();
 
+  useEffect(() => {
+    if (user && user.userType !== 'admin') {
+      history.replace('/pos');
+    }
+  }, [history, user]);
+
   // Show loading while auth is being checked
   if (loading) {
     return (
@@ -42,19 +37,15 @@ const Register = () => {
     );
   }
 
-  // Redirect non-admins
-  if (user && user.userType !== 'admin') {
-    history.push('/pos');
-    return null;
-  }
-
-  // Show error if user is not authenticated or not admin
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Authentication Required</h2>
-          <p className="text-slate-600">Please log in to register new cashiers.</p>
+      <div className="min-h-screen bg-slate-50 px-4 py-10 flex items-center justify-center">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
+            <Shield className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900">Authentication required</h2>
+          <p className="mt-2 text-sm text-slate-600">Please log in as an admin to register a new cashier.</p>
         </div>
       </div>
     );
@@ -122,49 +113,31 @@ const Register = () => {
     }
   };
 
-  const InputField = ({ 
-    label, 
-    icon, 
-    type = "text", 
-    placeholder, 
-    value, 
-    onChange, 
-    error, 
-    required = true 
-  }) => (
+  const InputField = ({ label, icon, type = 'text', placeholder, value, onChange, error, required = true }) => (
     <div className="space-y-2">
-      <label className="flex items-center space-x-2 text-sm font-semibold text-slate-700">
-        <div className="text-slate-500">{icon}</div>
+      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+        <span className="text-slate-500">{icon}</span>
         <span>{label}</span>
         {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+          {icon}
+        </span>
         <input
           type={type}
           placeholder={placeholder}
           value={value}
-          onChange={onChange}
-          disabled={isSubmitting}
-          className={`w-full px-4 py-3 pl-12 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 bg-slate-50/50 ${
-            error 
-              ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-              : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'
-          }`}
+          onChange={(e) => onChange(e)}
           required={required}
+          className={`block w-full rounded-xl border bg-white py-3 pl-11 pr-4 text-slate-900 placeholder-slate-400 outline-none transition-colors ${
+            error ? 'border-red-300 focus:border-red-500' : 'border-slate-300 focus:border-slate-900'
+          }`}
         />
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <div className={error ? 'text-red-400' : 'text-slate-400'}>
-            {icon}
-          </div>
-        </div>
-        {error && (
-          <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-            <X className="h-4 w-4 text-red-400" />
-          </div>
-        )}
+        {error && <X className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-red-500" />}
       </div>
       {error && (
-        <div className="flex items-center space-x-2 text-red-600 text-sm">
+        <div className="flex items-center gap-2 text-sm text-red-600">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -173,80 +146,70 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-2">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 rounded-xl shadow-lg">
-            <UserPlus className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800">Register New Cashier</h1>
-            <p className="text-slate-600">Add a new team member to your POS system</p>
+    <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
+              <Shield className="h-3.5 w-3.5" />
+              Admin access required
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
+                <UserPlus className="h-6 w-6" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tight">Register cashier</h1>
+                <p className="mt-1 text-sm text-slate-600">Create a new cashier account for the POS system.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 px-4 py-2 rounded-xl border border-emerald-200 inline-flex items-center space-x-2">
-          <Shield className="h-4 w-4 text-emerald-600" />
-          <span className="text-sm font-medium text-emerald-700">Admin Access Required</span>
-        </div>
-      </div>
 
-      {/* Registration Form */}
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-          {/* Form Header */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-emerald-500 p-2 rounded-lg">
-                  <UserPlus className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-800">Cashier Details</h2>
-                  <p className="text-sm text-slate-600">Fill in all required information</p>
-                </div>
+        {error && (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-500" />
+              <div>
+                <p className="font-medium">Registration failed</p>
+                <p className="mt-0.5">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Cashier information</h2>
+                <p className="text-sm text-slate-600">Fill in the details below to add a cashier.</p>
               </div>
             </div>
           </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="mx-6 mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong>Registration Failed:</strong>
-                  <p>{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Form Content */}
-          <div className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Personal Information Section */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <User className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-800">Personal Information</h3>
+          <form onSubmit={handleSubmit} className="space-y-8 p-6 md:p-8">
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-slate-500" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Personal details</h3>
                 </div>
 
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                   <InputField
-                    label="First Name"
+                    label="First name"
                     icon={<User className="h-4 w-4" />}
                     placeholder="Enter first name"
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                     error={validationErrors.firstName}
                   />
-                  
                   <InputField
-                    label="Last Name"
+                    label="Last name"
                     icon={<User className="h-4 w-4" />}
                     placeholder="Enter last name"
                     value={form.lastName}
@@ -255,19 +218,17 @@ const Register = () => {
                   />
                 </div>
 
-                {/* Birthday and Phone */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                   <InputField
-                    label="Date of Birth"
+                    label="Date of birth"
                     icon={<Calendar className="h-4 w-4" />}
                     type="date"
                     value={form.birthday}
                     onChange={(e) => setForm({ ...form, birthday: e.target.value })}
                     error={validationErrors.birthday}
                   />
-                  
                   <InputField
-                    label="Phone Number"
+                    label="Phone number"
                     icon={<Phone className="h-4 w-4" />}
                     type="tel"
                     placeholder="Enter phone number"
@@ -278,83 +239,68 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Account Information Section */}
-              <div className="pt-6 border-t border-slate-200">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="bg-purple-100 p-2 rounded-lg">
-                    <Shield className="h-4 w-4 text-purple-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-800">Account Information</h3>
+              <div className="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-slate-500" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Account details</h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <InputField
-                    label="Username"
-                    icon={<User className="h-4 w-4" />}
-                    placeholder="Choose a username"
-                    value={form.username}
-                    onChange={(e) => setForm({ ...form, username: e.target.value })}
-                    error={validationErrors.username}
-                  />
-                  
-                  <InputField
-                    label="Password"
-                    icon={<Lock className="h-4 w-4" />}
-                    type="password"
-                    placeholder="Create a secure password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    error={validationErrors.password}
-                  />
+                <InputField
+                  label="Username"
+                  icon={<User className="h-4 w-4" />}
+                  placeholder="Choose a username"
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  error={validationErrors.username}
+                />
+
+                <InputField
+                  label="Password"
+                  icon={<Lock className="h-4 w-4" />}
+                  type="password"
+                  placeholder="Create a secure password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  error={validationErrors.password}
+                />
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                  Password must be at least 6 characters long.
                 </div>
               </div>
-
-              {/* Submit Button */}
-              <div className="flex justify-end pt-6 border-t border-slate-200">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg flex items-center space-x-2 ${
-                    isSubmitting
-                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white hover:shadow-emerald-500/25 transform hover:-translate-y-0.5'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Registering...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      <span>Register Cashier</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        {/* Help Section */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
-          <div className="flex items-start space-x-3">
-            <div className="bg-blue-500 p-2 rounded-lg flex-shrink-0">
-              <AlertCircle className="h-5 w-5 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">Registration Guidelines</h3>
-              <ul className="space-y-1 text-sm text-blue-800">
-                <li>• All fields marked with * are required</li>
-                <li>• Username must be unique and at least 3 characters long</li>
-                <li>• Password must be at least 6 characters long</li>
-                <li>• Cashier must be at least 16 years old</li>
-                <li>• Phone number should be in a valid format</li>
-              </ul>
+
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="button"
+                onClick={() => history.push('/users')}
+                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                  isSubmitting
+                    ? 'cursor-not-allowed bg-slate-400 text-white'
+                    : 'bg-slate-900 text-white hover:bg-slate-800'
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                    <span>Registering</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Register cashier</span>
+                  </>
+                )}
+              </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
